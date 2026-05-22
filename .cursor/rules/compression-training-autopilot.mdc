@@ -1,0 +1,17 @@
+---
+description: Autonomous compression model training — datasets, Gemini benchmark, iterate without asking permission
+alwaysApply: true
+---
+
+# Compression training autopilot
+
+When improving LeanPrompt's offline compressor or training pipeline, read and follow:
+
+`docs/COMPRESSION_TRAINING_AUTOPILOT.md`
+
+**Rules:**
+- Do not ask permission to run `npm test`, `npm run build`, import/benchmark/train scripts, or write under `training-output/`.
+- Append each iteration to `leanprompt-extension/training-output/autopilot_log.md`.
+- Run `npm run benchmark:vs-gemini` after compression logic changes.
+- Phase A goal: avg Jaccard to teacher ≥ 0.85, validation pass ≥ 95%, offline win rate ≥ 55%.
+- Then execute Phase B (context split, teacher flywheel, highlight UX) from the same doc.

@@ -1,0 +1,80 @@
+name: Retrain Offline Compression Model
+
+on:
+  # Run every Sunday at 2am UTC
+  schedule:
+    - cron: "0 2 * * 0"
+
+  # Allow manual trigger from GitHub UI (Actions tab → Run workflow)
+  workflow_dispatch:
+    inputs:
+      min_rows:
+        description: "Minimum training rows before warning"
+        default: "50"
+      max_api_calls:
+        description: "Max Gemini API calls for tier-4 gap-fill"
+        default: "300"
+
+jobs:
+  retrain:
+    name: Fetch → Label → Train → Upload
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: leanprompt-extension
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: leanprompt-extension/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Step 1: Pull real user data from Supabase + label gaps with Gemini ──
+      - name: Fetch and label teacher data
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          npx tsx scripts/fetchAndLabelTeacherData.ts \
+            --min-rows=${{ github.event.inputs.min_rows || '50' }} \
+            --max-api-calls=${{ github.event.inputs.max_api_calls || '300' }}
+
+      # ── Step 2: Retrain the fast compression model ───────────────────────────
+      - name: Train compression model
+        run: |
+          npx tsx scripts/trainCompressionModel.ts \
+            training-output/imported/gemini_labeled.jsonl
+
+      # ── Step 3: Show metrics ─────────────────────────────────────────────────
+      - name: Print training metrics
+        run: |
+          echo "=== Training Metrics ==="
+          cat training-output/training_metrics.json
+
+      # ── Step 4: Upload trained model to Supabase Storage ────────────────────
+      - name: Upload model to Supabase Storage
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          UPLOAD_TO_STORAGE=true npx tsx scripts/promoteAndRetrain.ts
+
+      # ── Step 5: Save training artifacts as GitHub Actions artifact ───────────
+      - name: Upload training artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: training-output-${{ github.run_number }}
+          path: |
+            leanprompt-extension/training-output/training_metrics.json
+            leanprompt-extension/training-output/imported/gemini_labeled.jsonl
+          retention-days: 30

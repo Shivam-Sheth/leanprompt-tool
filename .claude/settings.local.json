@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test *)",
+      "Bash(npm run *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(npx vitest *)",
+      "Bash(node -e ' *)",
+      "Bash(npm show *)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(node -e \"const d=JSON.parse\\(require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\)\\); d.worst20.forEach\\(\\(w,i\\)=>console.log\\(i+1+'.',w.jaccard.toFixed\\(2\\),'|orig:',w.original.slice\\(0,70\\),'| offline:',w.offline.slice\\(0,60\\),'| teacher:',w.teacher.slice\\(0,60\\)\\)\\)\")",
+      "Bash(npx tsx *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); m=d['metrics']; print\\(f'avgJaccard: {m[\\\\\"avgJaccardOfflineToTeacher\\\\\"]:.4f}\\\\nvalidationPass: {m[\\\\\"validationPassRateOffline\\\\\"]:.4f}\\\\nofflineWins: {m[\\\\\"offlineWinsRate\\\\\"]:.4f}\\\\nexactMatch: {m[\\\\\"exactMatchTeacherRate\\\\\"]:.4f}\\\\nrows: {m[\\\\\"rows\\\\\"]}'\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); m=d['metrics']; print\\(f'avgJaccard: {m[\\\\\"avgJaccardOfflineToTeacher\\\\\"]:.4f}\\\\nvalidationPass: {m[\\\\\"validationPassRateOffline\\\\\"]:.4f}\\\\nofflineWins: {m[\\\\\"offlineWinsRate\\\\\"]:.4f}\\\\nexactMatch: {m[\\\\\"exactMatchTeacherRate\\\\\"]:.4f}'\\)\")",
+      "Bash(python3 -c ' *)",
+      "Bash(node leanprompt-extension/training-output/run_benchmark.js)",
+      "Bash(node -e \"const d=require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\); const j=JSON.parse\\(d\\); console.log\\(JSON.stringify\\({avgJaccard:j.avgJaccard, validationPassRate:j.validationPassRate, offlineBeatRate:j.offlineBeatRate, exactMatchRate:j.exactMatchRate}, null, 2\\)\\);\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); m=d['metrics']; print\\('j=',round\\(m['avgJaccardOfflineToTeacher'],4\\), 'val=',round\\(m['validationPassRateOffline'],4\\), 'wins=',round\\(m['offlineWinsRate'],4\\), 'exact=',round\\(m['exactMatchTeacherRate'],4\\)\\)\")"
+    ]
+  }
+}

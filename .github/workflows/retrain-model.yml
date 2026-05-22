@@ -1,0 +1,45 @@
+name: Retrain Compression Model
+
+on:
+  # Triggered automatically by the promote-learned-rules Supabase edge function
+  # when enough new rules/gold compressions are auto-promoted.
+  repository_dispatch:
+    types: [retrain-model]
+
+  # Also allow manual triggering from the GitHub Actions UI.
+  workflow_dispatch:
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: leanprompt-extension
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: leanprompt-extension/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch approved gold, retrain, and upload model
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          UPLOAD_TO_STORAGE: "true"
+        run: npm run promote-and-retrain
+
+      - name: Log promotion payload
+        if: github.event_name == 'repository_dispatch'
+        run: |
+          echo "Triggered by auto-promotion:"
+          echo "  Rules promoted: ${{ github.event.client_payload.rules_promoted }}"
+          echo "  Gold promoted:  ${{ github.event.client_payload.gold_promoted }}"
